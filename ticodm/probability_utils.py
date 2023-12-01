@@ -270,7 +270,7 @@ def generate_stopping_times(N:int,k_power:float,seed:int):
 @njit
 def compute_truncated_infinite_series(N:int,log_weights:np.array,k_power:float) -> np.array:
 
-    # Compute S = Y[0] + sum_i (Y[i] - Y[i-1])/P(N > i) using logarithms
+    # Compute log(S) = Y[0] + sum_i (Y[i] - Y[i-1])/P(N > i) using logarithms
     ln_Y = np.empty(N+1)
     ln_Y_pos = np.empty(N+1)
     ln_Y_neg = np.empty(N)

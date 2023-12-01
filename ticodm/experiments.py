@@ -151,8 +151,8 @@ class Experiment(object):
 
         # Update seed if specified
         self.seed = None
-        if "seed" in self.subconfig.keys():
-            self.seed = int(self.subconfig["seed"])
+        if "seed" in self.subconfig["inputs"].keys():
+            self.seed = int(self.subconfig["inputs"]["seed"])
             self.logger.warning(f'Updated seed to {self.seed}')
         # Get experiment data
         experiment_data = path.basename(path.normpath(self.subconfig['inputs']['dataset']))
@@ -221,7 +221,7 @@ class Experiment(object):
             pass
 
     def define_sample_batch_sizes(self):
-        N = self.sim_mcmc.N
+        N = self.subconfig['mcmc']['N']
         # Define sample batch sizes
         sample_sizes = np.repeat(int(self.store_progress*N),np.floor(1/self.store_progress))
         if sample_sizes.sum() < N:
@@ -1430,7 +1430,6 @@ class TableMCMC(Experiment):
                     "N0":1
                 }
         else:
-            self.od_mcmc.sample_unconstrained_margins()
             parameter_inits = {
                 "batch_counter":0,
                 "N0":1,
@@ -1470,7 +1469,6 @@ class TableMCMC(Experiment):
         sample_sizes = self.define_sample_batch_sizes()
         # Initialise batch counter
         batch_counter = parameter_inits['batch_counter']
-
         # Loop through each sample batch
         for i in tqdm(range(parameter_inits['N0'],N),disable=self.subconfig['disable_tqdm']):
                 
@@ -1483,6 +1481,8 @@ class TableMCMC(Experiment):
             self.tables = np.append(self.tables,table_sample[np.newaxis,:],axis=0)
             # Increment acceptance
             self.table_acceptance += table_accepted
+
+            print(len(self.od_mcmc.table_mb.basis_dictionaries))
                     
             # Print metadata
             if ((int(self.print_percentage*N) > 0) and (i % int(self.print_percentage*N) == 0) or i == (N-1)):

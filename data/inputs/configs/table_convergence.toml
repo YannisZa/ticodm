@@ -2,7 +2,7 @@ logging_mode = 'info'
 cuda = false
 
 [inputs]
-# seed = 1234
+seed = 1234
 n_workers = 1
 n_threads = 6
 dataset = './data/inputs/synthetic_2x3_N_100'
@@ -14,7 +14,7 @@ dims = [10,10]
   sparse_margins = false
   [inputs.contingency_table.constraints]
     axes = [[1]]
-    cells = ''
+    cells = [[0,1],[23,4]]
   [inputs.contingency_table.import]
     table = 'table.txt'
     margins = ['rowsums.txt','colsums.txt']

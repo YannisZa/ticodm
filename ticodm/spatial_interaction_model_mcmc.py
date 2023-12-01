@@ -300,7 +300,7 @@ class SpatialInteraction2DMarkovChainMonteCarlo(SpatialInteractionMarkovChainMon
 
         # Create initialisations
         g = np.log(delta)*np.ones((self.sim.dims[1],self.sim.dims[1])) - \
-            np.log(delta)*np.eye(self.sim.dims[1]) +\
+            np.log(delta)*np.eye(self.sim.dims[1]) + \
             np.log(1+delta)*np.eye(self.sim.dims[1])
         g = g.astype('float32')
         

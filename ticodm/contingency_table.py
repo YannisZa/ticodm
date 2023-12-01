@@ -991,7 +991,7 @@ class ContingencyTable2D(ContingencyTableIndependenceModel, ContingencyTableDepe
                         )
 
         self.admissibility_debugging('Monte Carlo',table0)
-
+        
         return table0.astype('int32')
     
     def table_import(self,intensity:list=None, margins: dict = {}) -> Union[np.ndarray, None]:
@@ -1328,9 +1328,12 @@ class ContingencyTable2D(ContingencyTableIndependenceModel, ContingencyTableDepe
         colsums0 = np.zeros(self.dims[constrained_axis1])
         colsums0[:] = self.residual_margins[tuplize(constrained_axis2)]
 
+        print(self.margins)
+        print(self.residual_margins)
+
         for cell in self.cells:
             # Initalise table values with minimum possible row or col sum or N/IJ
-            amount = int(min(np.floor(np.sum(rowsums0)/np.sum(table0.mask)),rowsums0[cell[0]],colsums0[cell[1]]))
+            amount = int(min(np.floor(np.sum(rowsums0)/np.sum(~table0.mask)),rowsums0[cell[0]],colsums0[cell[1]]))
 
             # Update table
             table0[cell] += np.int32(amount)
@@ -1349,29 +1352,35 @@ class ContingencyTable2D(ContingencyTableIndependenceModel, ContingencyTableDepe
 
         while not self.table_margins_admissible(table0.data):
 
-            # IF no solution found rerun
+            # If no solution found rerun
             if np.sum(table0.mask) == np.prod(self.ndims()):
-                self.table_iterative_uniform_residual_filling_solution(margins)
+                self.logger.warning(f'Solution found: {self.table_margins_admissible(table0.data)}.')
+                raise Exception('No solution found')
+                # self.table_iterative_uniform_residual_filling_solution(margins)
             
             # Get indices of unmasked elements
             unmasked_indices = np.ma.where(~table0.mask)
             # Create index in same dims ars sorted_indices
             # unmasked_indices = np.ravel_multi_index(unmasked_indices,table0.shape)
             # Maintain index order and get only unmasked indices
-            # print(table0)
-            # print('unmasked_indices',unmasked_indices)
-            cell_index = np.random.randint(len(unmasked_indices))
-            # print(cell_index,list(zip(*unmasked_indices)))
-            try:
-                cell = list(zip(*unmasked_indices))[cell_index]
-            except:
-                self.table_iterative_uniform_residual_filling_solution(margins)
+            candidate_cells = list(zip(*unmasked_indices))
+            if len(candidate_cells) == 0:
+                print(table0)
+                print(rowsums0,colsums0)
+                raise Exception('No free cells found')
+            # Sample a cell index uniformly at random
+            cell_index = np.random.randint(low=0,high=len(candidate_cells)) if len(candidate_cells) > 1 else 0
+            # try:
+            cell = candidate_cells[cell_index]
+            # except:
+            #     print('Restarting after cell index')
+            #     self.table_iterative_uniform_residual_filling_solution(margins)
             # try:
             # assert not table0.mask[cell]
             # except:
             #     print('cell',cell, 'out of index')
-            #     print(table0)
-            # print('\n')
+            print(table0)
+            print('\n')
             # Try to add maximum amount possible
             amount = int(min(
                 rowsums0[cell[0]], 

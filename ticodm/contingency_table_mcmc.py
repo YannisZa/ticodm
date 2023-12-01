@@ -1,4 +1,5 @@
 import logging
+import sys
 import numpy as np
 
 from os import path
@@ -186,7 +187,7 @@ class ContingencyTableMarkovChainMonteCarlo(object):
         return table0
     
     
-    def sample_margins_2way_table(self, intensity: list = None, axes: list = None) -> None:
+    def sample_margins_2way_table(self, intensity: list = None, axes: list = None, constrained:bool = False) -> None:
         
         self.logger.debug('initialise_margins_2way_tables')
         
@@ -198,12 +199,14 @@ class ContingencyTableMarkovChainMonteCarlo(object):
             intensity = np.ones(self.ct.dims,dtype='float32')
         
         margins = {}
+        np.random.seed(self.ct.seed)
+
         for ax in sorted_axes:
             if len(ax) == self.ct.ndims():
                 # Calculate normalisation of multinomial probabilities (total intensity)
                 total_intensity = np.sum(intensity.ravel())
                 # If this is the only constraint
-                if len(sorted_axes) == 1:
+                if not constrained:
                     # Sample grand total from Poisson
                     margins[ax] = np.array([np.random.poisson(total_intensity)],dtype='int32')
                 else:
@@ -224,16 +227,15 @@ class ContingencyTableMarkovChainMonteCarlo(object):
             else:
                 raise Exception(f"margins for axes {ax} could not be initialised")
 
-            # Update margin for given axis
-            self.ct.update_margins({ax:margins[ax]})
-        
+        # Update margins
+        self.ct.update_margins(margins)
         return margins
 
     def sample_constrained_margins(self, intensity: list = None) -> None:
-        return self.sample_margins(intensity,self.ct.constraints['constrained_axes'])
+        return self.sample_margins(intensity,self.ct.constraints['constrained_axes'],constrained=True)
     
     def sample_unconstrained_margins(self, intensity: list = None) -> None:
-        return self.sample_margins(intensity,self.ct.constraints['unconstrained_axes'])
+        return self.sample_margins(intensity,self.ct.constraints['unconstrained_axes'],constrained=False)
 
     def initialise_margin(self, axis, intensity: list = None) -> None:
         return self.margin_solver(

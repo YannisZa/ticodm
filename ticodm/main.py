@@ -186,7 +186,7 @@ def common_options(func):
             help = 'Overwrites size of ensemble of datasets for MCMC convergence diagnostic')
 @click.option('--table0','-tab0', type=click.Choice(TABLE_SOLVERS), default = None,
             help = 'Overwrites table initialisation method name in MCMC.')
-@click.option('--marginal0','-m0', type=click.Choice(MARGINAL_SOLVERS), default = None,
+@click.option('--margin0','-m0', type=click.Choice(MARGINAL_SOLVERS), default = None,
             help = 'Overwrites margin initialisation method name in MCMC.')
 @click.option('--alpha0','-alpha0', type=click.FloatRange(min=0), default = None,
             help = 'Overwrites initialisation of alpha parameter in MCMC.')
